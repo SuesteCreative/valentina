@@ -111,10 +111,12 @@ noBtn.addEventListener('click', () => {
         setTitle("Partes-me o coraçãozinho");
     } else if (noClicks === 6) {
         setGif(GIFS.notNow);
-        setTitle("estás a ser malina!");
+        setTitle("já não gostas de mim");
+        setSubtitle(""); // Clear subtitle if any
     } else if (noClicks === 8) {
         setGif(GIFS.crying);
-        setSubtitle("tu já não gostas de mim");
+        setTitle("estás a ser malina!");
+        setSubtitle("");
     } else if (noClicks >= 10) {
         yesBtn.classList.add('fullscreen');
         noBtn.classList.add('hidden');
