@@ -5,51 +5,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Queres ser a minha Valentina?</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Outfit:wght@300;400;600;800&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <!-- Tenor script included once as per requirements -->
     <script type="text/javascript" async src="https://tenor.com/embed.js"></script>
 </head>
 
 <body>
-    <div id="hearts-container"></div>
+    <div id="hearts-container" aria-hidden="true"></div>
 
-    <main class="container" id="main-card">
-        <!-- Initial Content Wrapper -->
-        <div id="initial-state">
-            <div id="gif-display" class="gif-wrapper">
-                <div class="tenor-gif-embed" data-postid="251089554508706592" data-share-method="host"
-                    data-aspect-ratio="1" data-width="100%">
-                    <a
-                        href="https://tenor.com/view/cupid-arrow-happy-valentines-day-valentines-day-happy-heart-day-gif-251089554508706592">Cupid
-                        Arrow Sticker</a>
-                </div>
-            </div>
+    <main class="card" id="mainCard">
+        <div id="toast" class="toast hidden" aria-live="polite"></div>
 
-            <h1 id="main-title">Queres ser a minha valentina?</h1>
-
-            <div class="button-group" id="button-group">
-                <button id="btn-yes" class="btn btn-yes">CLARO QUE SIM</button>
-                <button id="btn-no" class="btn btn-no">ew, não</button>
-            </div>
+        <div id="gifContainer" class="gif-container">
+            <!-- Initial GIF will be handled by JS for consistency -->
         </div>
 
-        <!-- Success Content -->
-        <div id="success-content" class="hidden">
-            <div id="success-gif" class="gif-wrapper">
-                <!-- Will be injected by JS to ensure it only loads then -->
-            </div>
-            <h1 class="success-title">Obrigado minha valentina</h1>
-            <p class="success-subtitle">Agora anda tomar o pequeno-almoço</p>
-            <button id="btn-restart" class="btn btn-restart">Outra vez?</button>
+        <div class="content">
+            <h1 id="title">Queres ser a minha valentina?</h1>
+            <p id="subtitle" class="subtitle"></p>
         </div>
 
-        <!-- Notification Card -->
-        <div id="certainty-card" class="certainty-card hidden">
-            <p>tens a certeza?</p>
+        <div id="buttonGroup" class="button-group">
+            <button id="yesBtn" class="btn btn-yes" aria-label="Aceitar ser valentina">CLARO QUE SIM</button>
+            <button id="noBtn" class="btn btn-no" aria-label="Recusar">ew, não</button>
+        </div>
+
+        <div id="finalContent" class="hidden">
+            <button id="replayBtn" class="btn btn-replay">Outra vez?</button>
         </div>
     </main>
 
