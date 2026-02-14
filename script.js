@@ -1,4 +1,10 @@
-// GIF Constants
+/**
+ * Valentine's Day Interactive Script
+ * - Handles GIF switching via Tenor embeds
+ * - Manages button growth and event clicks
+ * - Success state with heart animations
+ */
+
 const GIFS = {
     landing: '<div class="tenor-gif-embed" data-postid="251089554508706592" data-share-method="host" data-aspect-ratio="1" data-width="100%"><a href="https://tenor.com/view/cupid-arrow-happy-valentines-day-valentines-day-happy-heart-day-gif-251089554508706592">Cupid Arrow Sticker</a></div>',
     certainty: '<div class="tenor-gif-embed" data-postid="23680990" data-share-method="host" data-aspect-ratio="1.33891" data-width="100%"><a href="https://tenor.com/view/side-eye-dog-suspicious-look-suspicious-doubt-dog-doubt-gif-23680990">Side Eye Dog Suspicious Look GIF</a></div>',
@@ -8,12 +14,12 @@ const GIFS = {
     success: '<div class="tenor-gif-embed" data-postid="24787798" data-share-method="host" data-aspect-ratio="1.66667" data-width="100%"><a href="https://tenor.com/view/donald-duck-in-love-heart-beating-beautiful-crush-gif-24787798">Donald Duck In Love GIF</a></div>'
 };
 
-// State Variables
+// State
 let noClicks = 0;
-let simScale = 1;
 let simEnabled = false;
+let currentScale = 1;
 
-// DOM Elements
+// Elements
 const gifContainer = document.getElementById('gifContainer');
 const titleEl = document.getElementById('title');
 const subtitleEl = document.getElementById('subtitle');
@@ -25,24 +31,20 @@ const heartsContainer = document.getElementById('hearts-container');
 const finalContent = document.getElementById('finalContent');
 const replayBtn = document.getElementById('replayBtn');
 
-// --- Helper Functions ---
-
 /**
- * Updates the GIF in the container and triggers Tenor reload
+ * Robustly refreshes Tenor embeds after dynamic injection
  */
-function setGif(htmlString) {
-    gifContainer.innerHTML = htmlString;
+function refreshTenor() {
+    // We add a new script instance to trigger a re-scan of the DOM
+    const script = document.createElement('script');
+    script.src = "https://tenor.com/embed.js";
+    script.async = true;
+    document.body.appendChild(script);
+}
 
-    // Tenor Reload Logic
-    const oldScript = document.querySelector('script[src*="tenor.com/embed.js"]');
-    if (oldScript) {
-        oldScript.remove();
-    }
-
-    const newScript = document.createElement('script');
-    newScript.src = "https://tenor.com/embed.js";
-    newScript.async = true;
-    document.body.appendChild(newScript);
+function setGif(html) {
+    gifContainer.innerHTML = html;
+    refreshTenor();
 }
 
 function setTitle(text) {
@@ -53,36 +55,22 @@ function setSubtitle(text) {
     subtitleEl.textContent = text;
 }
 
-/**
- * Shows a temporary notification card
- */
-function showToast(text, durationMs = 2000) {
+function showToast(text) {
     toastEl.textContent = text;
     toastEl.classList.remove('hidden');
-    // Force reflow for animation
+    // Force reflow
     void toastEl.offsetWidth;
     toastEl.classList.add('visible');
 
     setTimeout(() => {
         toastEl.classList.remove('visible');
-        setTimeout(() => toastEl.classList.add('hidden'), 300);
-    }, durationMs);
+        setTimeout(() => toastEl.classList.add('hidden'), 350);
+    }, 2000);
 }
 
-/**
- * Increases the Yes button size smoothly
- */
-function updateYesScale() {
-    simScale += 0.12;
-    yesBtn.style.transform = `scale(${simScale})`;
-}
-
-/**
- * Spawns pulsating hearts for the background
- */
 function spawnHearts() {
-    const count = 30;
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const isReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const count = isReduced ? 10 : 35;
 
     for (let i = 0; i < count; i++) {
         const heart = document.createElement('div');
@@ -92,44 +80,29 @@ function spawnHearts() {
         heart.style.top = Math.random() * 100 + 'vh';
         heart.style.fontSize = (Math.random() * 20 + 20) + 'px';
 
-        if (!reducedMotion) {
-            const duration = 1 + Math.random() * 2;
-            heart.style.animation = `floatAndPulse ${duration}s ease-in-out infinite alternate`;
+        if (!isReduced) {
+            const moveTime = 0.5 + Math.random() * 1;
+            const pulseTime = 0.3 + Math.random() * 0.4;
+            heart.style.animation = `
+                heartMove ${moveTime}s linear infinite alternate,
+                heartPulse ${pulseTime}s ease-in-out infinite alternate
+            `;
         }
 
         heartsContainer.appendChild(heart);
     }
 }
 
-/**
- * Final success state
- */
-function enterFinalScreen() {
-    // Hide buttons and clear styles
-    yesBtn.classList.remove('fullscreen');
-    yesBtn.classList.add('hidden');
-    noBtn.classList.add('hidden');
-
-    // Switch content
-    setTitle("Obrigado minha valentina");
-    setSubtitle("Agora anda tomar o pequeno-almoço");
-    setGif(GIFS.success);
-
-    // Show replay button
-    finalContent.classList.remove('hidden');
-
-    // Animate hearts
-    spawnHearts();
-}
-
-// --- Event Listeners ---
-
+// Event handlers
 noBtn.addEventListener('click', () => {
     noClicks++;
     simEnabled = true;
-    updateYesScale();
 
-    // Event sequence
+    // Scaling Yes Button
+    currentScale += 0.22; // More visible growth
+    yesBtn.style.transform = `scale(${currentScale})`;
+
+    // Logic Tree
     if (noClicks === 2) {
         setGif(GIFS.certainty);
         showToast("tens a certeza?");
@@ -144,26 +117,41 @@ noBtn.addEventListener('click', () => {
         setSubtitle("tu já não gostas de mim");
     } else if (noClicks >= 10) {
         yesBtn.classList.add('fullscreen');
-        noBtn.style.opacity = '0';
-        noBtn.style.pointerEvents = 'none';
         noBtn.classList.add('hidden');
     }
 });
 
 yesBtn.addEventListener('click', () => {
     if (!simEnabled) {
-        // Subtle feedback for early click
         mainCard.classList.add('shake');
         setTimeout(() => mainCard.classList.remove('shake'), 250);
         return;
     }
 
-    enterFinalScreen();
+    // Success State
+    mainCard.style.opacity = '0';
+    setTimeout(() => {
+        // Clear initial state
+        yesBtn.className = 'hidden';
+        noBtn.classList.add('hidden');
+
+        // Setup success view
+        setTitle("Obrigado minha valentina");
+        setSubtitle("Agora anda tomar o pequeno-almoço");
+        setGif(GIFS.success);
+
+        finalContent.classList.remove('hidden');
+        mainCard.style.opacity = '1';
+
+        spawnHearts();
+    }, 400);
 });
 
 replayBtn.addEventListener('click', () => {
     window.location.reload();
 });
 
-// --- Initial Setup ---
-setGif(GIFS.landing);
+// Initialization
+document.addEventListener('DOMContentLoaded', () => {
+    setGif(GIFS.landing);
+});
