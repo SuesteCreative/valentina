@@ -5,22 +5,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Queres ser a minha Valentina?</title>
+    <!-- Stylesheets -->
     <link rel="stylesheet" href="styles.css">
+
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
-    <!-- Tenor script included once as per requirements -->
+
+    <!-- Tenor script included once -->
     <script type="text/javascript" async src="https://tenor.com/embed.js"></script>
 </head>
 
 <body>
+    <!-- Hearts container (behind everything) -->
     <div id="hearts-container" aria-hidden="true"></div>
 
-    <main class="card" id="mainCard">
+    <!-- Main Card Container -->
+    <main class="container" id="mainCard">
+        <!-- Toast Notification Card -->
         <div id="toast" class="toast hidden" aria-live="polite"></div>
 
-        <div id="gifContainer" class="gif-container">
-            <!-- Initial GIF will be handled by JS for consistency -->
+        <!-- GIF Wrapper -->
+        <div id="gifContainer" class="gif-wrapper">
+            <!-- First GIF is injected by JS to ensure logic consistency -->
         </div>
 
         <div class="content">
@@ -28,17 +36,20 @@
             <p id="subtitle" class="subtitle"></p>
         </div>
 
+        <!-- Buttons -->
         <div id="buttonGroup" class="button-group">
             <button id="yesBtn" class="btn btn-yes" aria-label="Aceitar ser valentina">CLARO QUE SIM</button>
             <button id="noBtn" class="btn btn-no" aria-label="Recusar">ew, não</button>
         </div>
 
+        <!-- Hidden Final Actions -->
         <div id="finalContent" class="hidden">
             <button id="replayBtn" class="btn btn-replay">Outra vez?</button>
         </div>
     </main>
 
-    <script src="script.js"></script>
+    <!-- Script deferred to ensure DOM is ready -->
+    <script src="script.js" defer></script>
 </body>
 
 </html>
