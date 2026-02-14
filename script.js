@@ -1,135 +1,169 @@
-let noClicks = 0;
-let canClickYes = false;
-
-const btnYes = document.getElementById('btn-yes');
-const btnNo = document.getElementById('btn-no');
-const gifDisplay = document.getElementById('gif-display');
-const mainTitle = document.getElementById('main-title');
-const initialState = document.getElementById('initial-state');
-const successContent = document.getElementById('success-content');
-const successGif = document.getElementById('success-gif');
-const certaintyCard = document.getElementById('certainty-card');
-const heartsContainer = document.getElementById('hearts-container');
-
-const gifs = {
-    initial: '<div class="tenor-gif-embed" data-postid="251089554508706592" data-share-method="host" data-aspect-ratio="1" data-width="100%"><a href="https://tenor.com/view/cupid-arrow-happy-valentines-day-valentines-day-happy-heart-day-gif-251089554508706592">Cupid Arrow Sticker</a></div>',
+// GIF Constants
+const GIFS = {
+    landing: '<div class="tenor-gif-embed" data-postid="251089554508706592" data-share-method="host" data-aspect-ratio="1" data-width="100%"><a href="https://tenor.com/view/cupid-arrow-happy-valentines-day-valentines-day-happy-heart-day-gif-251089554508706592">Cupid Arrow Sticker</a></div>',
     certainty: '<div class="tenor-gif-embed" data-postid="23680990" data-share-method="host" data-aspect-ratio="1.33891" data-width="100%"><a href="https://tenor.com/view/side-eye-dog-suspicious-look-suspicious-doubt-dog-doubt-gif-23680990">Side Eye Dog Suspicious Look GIF</a></div>',
     heartbreak: '<div class="tenor-gif-embed" data-postid="16778760554072111618" data-share-method="host" data-aspect-ratio="1.7" data-width="100%"><a href="https://tenor.com/view/prempdr-fc-mobile-fifa-gif-16778760554072111618">Prempdr Fc Mobile GIF</a></div>',
-    mean: '<div class="tenor-gif-embed" data-postid="9733783" data-share-method="host" data-aspect-ratio="0.821429" data-width="100%"><a href="https://tenor.com/view/not-now-nevvvvvverrrrlol-lol-gif-9733783">Not Now GIF</a></div>',
+    notNow: '<div class="tenor-gif-embed" data-postid="9733783" data-share-method="host" data-aspect-ratio="0.821429" data-width="100%"><a href="https://tenor.com/view/not-now-nevvvvvverrrrlol-lol-gif-9733783">Not Now GIF</a></div>',
     crying: '<div class="tenor-gif-embed" data-postid="3785257530374072155" data-share-method="host" data-aspect-ratio="1.67114" data-width="100%"><a href="https://tenor.com/view/crying-bawling-gif-3785257530374072155">Crying Bawling GIF</a></div>',
     success: '<div class="tenor-gif-embed" data-postid="24787798" data-share-method="host" data-aspect-ratio="1.66667" data-width="100%"><a href="https://tenor.com/view/donald-duck-in-love-heart-beating-beautiful-crush-gif-24787798">Donald Duck In Love GIF</a></div>'
 };
 
-function updateGif(container, html) {
-    container.innerHTML = html;
-    // Force reload Tenor script to process new embed
+// State Variables
+let noClicks = 0;
+let simScale = 1;
+let simEnabled = false;
+
+// DOM Elements
+const gifContainer = document.getElementById('gifContainer');
+const titleEl = document.getElementById('title');
+const subtitleEl = document.getElementById('subtitle');
+const toastEl = document.getElementById('toast');
+const yesBtn = document.getElementById('yesBtn');
+const noBtn = document.getElementById('noBtn');
+const mainCard = document.getElementById('mainCard');
+const heartsContainer = document.getElementById('hearts-container');
+const finalContent = document.getElementById('finalContent');
+const replayBtn = document.getElementById('replayBtn');
+
+// --- Helper Functions ---
+
+/**
+ * Updates the GIF in the container and triggers Tenor reload
+ */
+function setGif(htmlString) {
+    gifContainer.innerHTML = htmlString;
+
+    // Tenor Reload Logic
     const oldScript = document.querySelector('script[src*="tenor.com/embed.js"]');
-    if (oldScript) oldScript.remove();
-    const script = document.createElement('script');
-    script.src = "https://tenor.com/embed.js";
-    script.async = true;
-    document.body.appendChild(script);
+    if (oldScript) {
+        oldScript.remove();
+    }
+
+    const newScript = document.createElement('script');
+    newScript.src = "https://tenor.com/embed.js";
+    newScript.async = true;
+    document.body.appendChild(newScript);
 }
 
-// Ensure the first GIF is loaded correctly
-updateGif(gifDisplay, gifs.initial);
+function setTitle(text) {
+    titleEl.textContent = text;
+}
 
-btnNo.addEventListener('click', () => {
+function setSubtitle(text) {
+    subtitleEl.textContent = text;
+}
+
+/**
+ * Shows a temporary notification card
+ */
+function showToast(text, durationMs = 2000) {
+    toastEl.textContent = text;
+    toastEl.classList.remove('hidden');
+    // Force reflow for animation
+    void toastEl.offsetWidth;
+    toastEl.classList.add('visible');
+
+    setTimeout(() => {
+        toastEl.classList.remove('visible');
+        setTimeout(() => toastEl.classList.add('hidden'), 300);
+    }, durationMs);
+}
+
+/**
+ * Increases the Yes button size smoothly
+ */
+function updateYesScale() {
+    simScale += 0.12;
+    yesBtn.style.transform = `scale(${simScale})`;
+}
+
+/**
+ * Spawns pulsating hearts for the background
+ */
+function spawnHearts() {
+    const count = 30;
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    for (let i = 0; i < count; i++) {
+        const heart = document.createElement('div');
+        heart.classList.add('heart');
+        heart.innerHTML = '❤️';
+        heart.style.left = Math.random() * 100 + 'vw';
+        heart.style.top = Math.random() * 100 + 'vh';
+        heart.style.fontSize = (Math.random() * 20 + 20) + 'px';
+
+        if (!reducedMotion) {
+            const duration = 1 + Math.random() * 2;
+            heart.style.animation = `floatAndPulse ${duration}s ease-in-out infinite alternate`;
+        }
+
+        heartsContainer.appendChild(heart);
+    }
+}
+
+/**
+ * Final success state
+ */
+function enterFinalScreen() {
+    // Hide buttons and clear styles
+    yesBtn.classList.remove('fullscreen');
+    yesBtn.classList.add('hidden');
+    noBtn.classList.add('hidden');
+
+    // Switch content
+    setTitle("Obrigado minha valentina");
+    setSubtitle("Agora anda tomar o pequeno-almoço");
+    setGif(GIFS.success);
+
+    // Show replay button
+    finalContent.classList.remove('hidden');
+
+    // Animate hearts
+    spawnHearts();
+}
+
+// --- Event Listeners ---
+
+noBtn.addEventListener('click', () => {
     noClicks++;
-    canClickYes = true;
+    simEnabled = true;
+    updateYesScale();
 
-    // Increase YES button size
-    const currentScale = 1 + (noClicks * 0.5);
-    btnYes.style.transform = `scale(${currentScale})`;
-
+    // Event sequence
     if (noClicks === 2) {
-        updateGif(gifDisplay, gifs.certainty);
-        certaintyCard.classList.remove('hidden');
-        setTimeout(() => certaintyCard.classList.add('hidden'), 2000);
+        setGif(GIFS.certainty);
+        showToast("tens a certeza?");
     } else if (noClicks === 4) {
-        updateGif(gifDisplay, gifs.heartbreak);
-        mainTitle.innerText = "Partes-me o coraçãozinho";
+        setGif(GIFS.heartbreak);
+        setTitle("Partes-me o coraçãozinho");
     } else if (noClicks === 6) {
-        updateGif(gifDisplay, gifs.mean);
-        mainTitle.innerText = "estás a ser malina!";
+        setGif(GIFS.notNow);
+        setTitle("estás a ser malina!");
     } else if (noClicks === 8) {
-        updateGif(gifDisplay, gifs.crying);
-        mainTitle.innerText = "tu já não gostas de mim";
+        setGif(GIFS.crying);
+        setSubtitle("tu já não gostas de mim");
     } else if (noClicks >= 10) {
-        // Full screen cover
-        btnYes.style.position = 'fixed';
-        btnYes.style.top = '0';
-        btnYes.style.left = '0';
-        btnYes.style.width = '100vw';
-        btnYes.style.height = '100vh';
-        btnYes.style.zIndex = '9999';
-        btnYes.style.borderRadius = '0';
-        btnYes.style.fontSize = '4rem';
-        btnYes.style.display = 'flex';
-        btnYes.style.alignItems = 'center';
-        btnYes.style.justifyContent = 'center';
-        btnNo.style.display = 'none';
+        yesBtn.classList.add('fullscreen');
+        noBtn.style.opacity = '0';
+        noBtn.style.pointerEvents = 'none';
+        noBtn.classList.add('hidden');
     }
 });
 
-btnYes.addEventListener('click', () => {
-    if (!canClickYes) return;
+yesBtn.addEventListener('click', () => {
+    if (!simEnabled) {
+        // Subtle feedback for early click
+        mainCard.classList.add('shake');
+        setTimeout(() => mainCard.classList.remove('shake'), 250);
+        return;
+    }
 
-    // Transition to success state
-    initialState.style.display = 'none';
-    successContent.classList.remove('hidden');
-
-    // Position fixed cleanup
-    btnYes.style.display = 'none';
-
-    // Inject Success GIF (Donald Duck) only now
-    updateGif(successGif, gifs.success);
-
-    startHeartRain();
+    enterFinalScreen();
 });
 
-document.getElementById('btn-restart').addEventListener('click', () => {
+replayBtn.addEventListener('click', () => {
     window.location.reload();
 });
 
-function startHeartRain() {
-    for (let i = 0; i < 40; i++) {
-        setTimeout(createHeart, i * 150);
-    }
-}
-
-function createHeart() {
-    const heart = document.createElement('div');
-    heart.classList.add('heart');
-    heart.innerHTML = '❤️';
-
-    const startX = Math.random() * 100;
-    const startY = Math.random() * 100;
-    heart.style.left = startX + 'vw';
-    heart.style.top = startY + 'vh';
-
-    // Fast side-to-side and pulsating as requested
-    const moveDuration = 0.4 + Math.random() * 0.6;
-    const pulseDuration = 0.3 + Math.random() * 0.3;
-
-    heart.style.animation = `
-        heartMove ${moveDuration}s ease-in-out infinite alternate,
-        heartPulse ${pulseDuration}s ease-in-out infinite alternate
-    `;
-
-    heartsContainer.appendChild(heart);
-}
-
-// Initial state for hearts (defined in CSS animations)
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes heartMove {
-        from { transform: translateX(-15vw); }
-        to { transform: translateX(15vw); }
-    }
-    @keyframes heartPulse {
-        from { transform: scale(0.8); opacity: 0.3; }
-        to { transform: scale(1.4); opacity: 0.7; }
-    }
-`;
-document.head.appendChild(style);
+// --- Initial Setup ---
+setGif(GIFS.landing);
