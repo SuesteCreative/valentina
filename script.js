@@ -98,9 +98,13 @@ noBtn.addEventListener('click', () => {
     noClicks++;
     simEnabled = true;
 
-    // Scaling Yes Button
-    currentScale += 0.22; // More visible growth
-    yesBtn.style.transform = `scale(${currentScale})`;
+    // Scaling Yes Button (affecting layout to push the "No" button)
+    const paddingBase = 1.1;
+    const fontBase = 0.95;
+    const growth = noClicks * 0.5;
+
+    yesBtn.style.padding = `${paddingBase + growth}rem ${(paddingBase + growth) * 1.8}rem`;
+    yesBtn.style.fontSize = `${fontBase + (noClicks * 0.25)}rem`;
 
     // Logic Tree
     if (noClicks === 2) {
